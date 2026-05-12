@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Reset Blog</title></head>
+<body style="background:#0d1117;color:#c9d1d9;font-family:sans-serif;text-align:center;padding-top:100px;">
+  <h2>Blog Reset</h2>
+  <p id="msg">Clearing cache...</p>
+  <script>
+    localStorage.clear();
+    setTimeout(function() {
+      document.getElementById('msg').textContent = 'Done! Reloading blog...';
+      setTimeout(function() { location.href = '/'; }, 500);
+    }, 300);
+  </script>
+</body>
+</html>
