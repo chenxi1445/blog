@@ -343,7 +343,6 @@ body {
 <!-- Header -->
 <header class="header" role="banner">
   <h1 class="header-title">🍽️ 美味点菜</h1>
-  <button class="settings-btn" id="settingsBtn" aria-label="设置推送" title="设置微信推送">⚙️</button>
   <button class="header-cart-btn" aria-label="查看购物车" id="headerCartBtn">
     🛒<span class="cart-badge" id="cartBadge" style="display:none">0</span>
   </button>
@@ -417,24 +416,6 @@ body {
     <button class="form-submit-btn" id="checkoutSubmit">
       <span class="spinner"></span><span class="btn-text">提交订单</span>
     </button>
-  </div>
-</div>
-
-<!-- Settings Modal -->
-<div class="checkout-overlay" id="settingsOverlay">
-  <div class="checkout-modal" role="dialog" aria-label="微信推送设置">
-    <div class="checkout-modal-title">⚙️ 微信推送设置</div>
-    <div class="form-group">
-      <label class="form-label" for="sendKey">Server酱 SendKey</label>
-      <input class="form-input" id="sendKey" placeholder="输入你的 SendKey">
-      <div class="settings-hint">
-        前往 <a class="settings-link" href="https://sct.ftqq.com/" target="_blank" rel="noopener">sct.ftqq.com</a> 注册获取，订单将推送到你的微信
-      </div>
-    </div>
-    <div id="settingsStatus" style="margin-bottom:var(--space-md)"></div>
-    <button class="form-submit-btn" id="settingsSaveBtn">保存</button>
-    <button class="form-submit-btn" id="settingsTestBtn" style="background:var(--color-text-secondary);margin-top:var(--space-sm)">测试推送</button>
-    <button class="form-submit-btn" id="settingsCloseBtn" style="background:transparent;color:var(--color-text-secondary);border:1px solid var(--color-border);margin-top:var(--space-sm)">关闭</button>
   </div>
 </div>
 
@@ -700,19 +681,14 @@ function renderCartSheet() {
 }
 
 // ===== Server酱 WeChat Push =====
-const SENDKEY_KEY = 'serverchan_sendkey';
-
-function getSendKey() { return localStorage.getItem(SENDKEY_KEY) || ''; }
-function setSendKey(k) { localStorage.setItem(SENDKEY_KEY, k); }
+const SENDKEY = 'SCT348580TtsdjSIHR1WJZo1k3k5ZiTfzT';
 
 async function sendToWechat(orderData) {
-  const sendkey = getSendKey();
-  if (!sendkey) return false;
   try {
     const title = `${orderData.custName} — 新订单 ¥${orderData.total.toFixed(2)}`;
     const items = orderData.items.map(i => `${i.name} x${i.qty}  ¥${(i.price*i.qty).toFixed(2)}`).join('\n');
     const desp = `## 🍽️ 新订单\n\n**顾客**: ${orderData.custName}\n**电话**: ${orderData.custPhone || '未留'}\n**备注**: ${orderData.custNote || '无'}\n\n### 菜品明细\n${items}\n\n---\n**合计: ¥${orderData.total.toFixed(2)}**\n\n${new Date().toLocaleString('zh-CN')}`;
-    const resp = await fetch(`https://sctapi.ftqq.com/${sendkey}.send`, {
+    const resp = await fetch(`https://sctapi.ftqq.com/${SENDKEY}.send`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({title, desp})
     });
@@ -745,47 +721,10 @@ async function submitCheckout() {
   cart = []; updateCartUI(); checkoutOverlay.classList.remove('open');
   btn.classList.remove('loading'); btn.disabled = false;
   if (pushed) { showToast('✅ 已下单，微信通知已发送！'); }
-  else if (getSendKey()) { showToast('⚠️ 推送失败，请检查设置'); }
-  else { showToast('✅ 已下单（未配置微信推送）'); }
-}
-
-// ===== Settings =====
-function updateSettingsStatus() {
-  const key = getSendKey();
-  const el = document.getElementById('settingsStatus');
-  if (key) { el.innerHTML = '<span class="settings-status ok">✅ 已配置推送</span>'; }
-  else { el.innerHTML = '<span class="settings-status none">⚠️ 未配置，订单不会推送到微信</span>'; }
-}
-
-function openSettings() {
-  document.getElementById('sendKey').value = getSendKey();
-  updateSettingsStatus();
-  document.getElementById('settingsOverlay').classList.add('open');
-}
-
-async function testSend() {
-  const key = document.getElementById('sendKey').value.trim();
-  if (!key) { showToast('请先输入 SendKey'); return; }
-  setSendKey(key); updateSettingsStatus();
-  const resp = await fetch(`https://sctapi.ftqq.com/${key}.send`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({title:'🧪 测试推送', desp:`美味点菜小程序测试推送\n\n时间: ${new Date().toLocaleString('zh-CN')}`})
-  });
-  const data = await resp.json();
-  if (data.code === 0) showToast('✅ 测试成功！请查看微信');
-  else showToast('❌ 推送失败: ' + (data.message || '未知错误'));
+  else { showToast('✅ 已下单（推送暂时失败，请稍后重试）'); }
 }
 
 document.getElementById('checkoutSubmit').addEventListener('click', submitCheckout);
-document.getElementById('settingsBtn').addEventListener('click', openSettings);
-document.getElementById('settingsSaveBtn').addEventListener('click', () => {
-  const key = document.getElementById('sendKey').value.trim();
-  setSendKey(key); updateSettingsStatus(); closeSettings(); showToast(key ? '✅ 已保存' : '已清除');
-});
-document.getElementById('settingsTestBtn').addEventListener('click', testSend);
-document.getElementById('settingsCloseBtn').addEventListener('click', closeSettings);
-document.getElementById('settingsOverlay').addEventListener('click', e => { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); });
-function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
 
 function updateCartUI() {
   const qty = cartQty();
