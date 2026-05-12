@@ -142,6 +142,9 @@ body {
   background:linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
   position:relative; overflow:hidden;
 }
+.dish-img-fallback {
+  position:absolute; top:0; left:0; width:100%; height:100%;
+}
 .dish-img-emoji { font-size:2.5rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
 .dish-img-name { font-size:var(--font-sm); color:rgba(255,255,255,0.9); font-weight:600; text-shadow:0 1px 3px rgba(0,0,0,0.3); }
 .dish-body { padding:var(--space-md); flex:1; display:flex; flex-direction:column; }
@@ -426,89 +429,89 @@ body {
 // ===== DATA: Chinese Dish Database =====
 const DISHES = [
   // 川菜 Sichuan
-  { id:1,  name:'宫保鸡丁', desc:'花生、鸡丁、干辣椒爆炒', price:32, cat:'川菜', emoji:'🐔', color:'#e74c3c' },
-  { id:2,  name:'麻婆豆腐', desc:'嫩豆腐配牛肉末，麻辣鲜香', price:22, cat:'川菜', emoji:'🧈', color:'#c0392b' },
-  { id:3,  name:'回锅肉', desc:'五花肉片配蒜苗豆瓣酱', price:35, cat:'川菜', emoji:'🥩', color:'#e67e22' },
-  { id:4,  name:'水煮鱼', desc:'鲜鱼片配豆芽，麻辣沸腾', price:58, cat:'川菜', emoji:'🐟', color:'#d35400' },
-  { id:5,  name:'夫妻肺片', desc:'牛肉牛杂红油拌制', price:38, cat:'川菜', emoji:'🐂', color:'#e74c3c' },
-  { id:6,  name:'鱼香肉丝', desc:'肉丝木耳笋丝，酸甜微辣', price:28, cat:'川菜', emoji:'🥢', color:'#e67e22' },
-  { id:7,  name:'辣子鸡', desc:'鸡块与干辣椒花生同炸', price:36, cat:'川菜', emoji:'🍗', color:'#c0392b' },
+  { id:1,  name:'宫保鸡丁', desc:'花生、鸡丁、干辣椒爆炒', price:32, cat:'川菜', emoji:'🐔', color:'#e74c3c', en:'kung pao chicken' },
+  { id:2,  name:'麻婆豆腐', desc:'嫩豆腐配牛肉末，麻辣鲜香', price:22, cat:'川菜', emoji:'🧈', color:'#c0392b', en:'mapo tofu sichuan' },
+  { id:3,  name:'回锅肉', desc:'五花肉片配蒜苗豆瓣酱', price:35, cat:'川菜', emoji:'🥩', color:'#e67e22', en:'twice cooked pork belly' },
+  { id:4,  name:'水煮鱼', desc:'鲜鱼片配豆芽，麻辣沸腾', price:58, cat:'川菜', emoji:'🐟', color:'#d35400', en:'sichuan boiled fish' },
+  { id:5,  name:'夫妻肺片', desc:'牛肉牛杂红油拌制', price:38, cat:'川菜', emoji:'🐂', color:'#e74c3c', en:'fuqi feipian beef' },
+  { id:6,  name:'鱼香肉丝', desc:'肉丝木耳笋丝，酸甜微辣', price:28, cat:'川菜', emoji:'🥢', color:'#e67e22', en:'yuxiang shredded pork' },
+  { id:7,  name:'辣子鸡', desc:'鸡块与干辣椒花生同炸', price:36, cat:'川菜', emoji:'🍗', color:'#c0392b', en:'chongqing spicy chicken' },
 
   // 粤菜 Cantonese
-  { id:10, name:'白切鸡', desc:'清远鸡原味白切，配姜葱油', price:48, cat:'粤菜', emoji:'🐔', color:'#f39c12' },
-  { id:11, name:'蜜汁叉烧', desc:'梅花肉蜜汁烤制，外焦里嫩', price:38, cat:'粤菜', emoji:'🥓', color:'#e67e22' },
-  { id:12, name:'煲仔饭', desc:'腊味配米饭砂锅煲制', price:32, cat:'粤菜', emoji:'🍚', color:'#d68910' },
-  { id:13, name:'水晶虾饺', desc:'澄面皮包裹鲜虾，晶莹剔透', price:28, cat:'粤菜', emoji:'🦐', color:'#f39c12' },
-  { id:14, name:'肠粉', desc:'米浆蒸制卷馅，嫩滑爽口', price:15, cat:'粤菜', emoji:'📜', color:'#f5b041' },
-  { id:15, name:'白灼菜心', desc:'嫩菜心白灼，清甜脆嫩', price:18, cat:'粤菜', emoji:'🥬', color:'#27ae60' },
+  { id:10, name:'白切鸡', desc:'清远鸡原味白切，配姜葱油', price:48, cat:'粤菜', emoji:'🐔', color:'#f39c12', en:'poached chicken cantonese' },
+  { id:11, name:'蜜汁叉烧', desc:'梅花肉蜜汁烤制，外焦里嫩', price:38, cat:'粤菜', emoji:'🥓', color:'#e67e22', en:'char siu bbq pork' },
+  { id:12, name:'煲仔饭', desc:'腊味配米饭砂锅煲制', price:32, cat:'粤菜', emoji:'🍚', color:'#d68910', en:'claypot rice chinese' },
+  { id:13, name:'水晶虾饺', desc:'澄面皮包裹鲜虾，晶莹剔透', price:28, cat:'粤菜', emoji:'🦐', color:'#f39c12', en:'har gow shrimp dumpling' },
+  { id:14, name:'肠粉', desc:'米浆蒸制卷馅，嫩滑爽口', price:15, cat:'粤菜', emoji:'📜', color:'#f5b041', en:'rice noodle roll' },
+  { id:15, name:'白灼菜心', desc:'嫩菜心白灼，清甜脆嫩', price:18, cat:'粤菜', emoji:'🥬', color:'#27ae60', en:'choy sum vegetable' },
 
   // 鲁菜 Shandong
-  { id:20, name:'糖醋鲤鱼', desc:'黄河鲤鱼糖醋汁浇制', price:68, cat:'鲁菜', emoji:'🐟', color:'#e67e22' },
-  { id:21, name:'九转大肠', desc:'猪大肠九转烹制，酸甜苦辣咸', price:58, cat:'鲁菜', emoji:'🌀', color:'#d35400' },
-  { id:22, name:'葱烧海参', desc:'大葱烧制海参，鲜美软糯', price:88, cat:'鲁菜', emoji:'🥒', color:'#2ecc71' },
-  { id:23, name:'油焖大虾', desc:'对虾油焖，色泽红亮', price:68, cat:'鲁菜', emoji:'🦐', color:'#e74c3c' },
-  { id:24, name:'糖醋里脊', desc:'猪里脊糖醋汁烹制', price:32, cat:'鲁菜', emoji:'🥩', color:'#e67e22' },
+  { id:20, name:'糖醋鲤鱼', desc:'黄河鲤鱼糖醋汁浇制', price:68, cat:'鲁菜', emoji:'🐟', color:'#e67e22', en:'sweet sour carp' },
+  { id:21, name:'九转大肠', desc:'猪大肠九转烹制，酸甜苦辣咸', price:58, cat:'鲁菜', emoji:'🌀', color:'#d35400', en:'braised pork intestine' },
+  { id:22, name:'葱烧海参', desc:'大葱烧制海参，鲜美软糯', price:88, cat:'鲁菜', emoji:'🥒', color:'#2ecc71', en:'braised sea cucumber' },
+  { id:23, name:'油焖大虾', desc:'对虾油焖，色泽红亮', price:68, cat:'鲁菜', emoji:'🦐', color:'#e74c3c', en:'braised prawn' },
+  { id:24, name:'糖醋里脊', desc:'猪里脊糖醋汁烹制', price:32, cat:'鲁菜', emoji:'🥩', color:'#e67e22', en:'sweet sour pork' },
 
   // 苏菜 Jiangsu
-  { id:30, name:'松鼠桂鱼', desc:'桂鱼剞花刀炸制，形似松鼠', price:78, cat:'苏菜', emoji:'🐟', color:'#e74c3c' },
-  { id:31, name:'盐水鸭', desc:'南京盐水鸭，皮白肉红', price:38, cat:'苏菜', emoji:'🦆', color:'#ecf0f1' },
-  { id:32, name:'清炖狮子头', desc:'蟹粉大肉丸清汤炖制', price:45, cat:'苏菜', emoji:'🦁', color:'#d35400' },
-  { id:33, name:'大煮干丝', desc:'豆腐干切丝配高汤', price:28, cat:'苏菜', emoji:'🍜', color:'#f39c12' },
-  { id:34, name:'无锡排骨', desc:'猪肋排酱烧，酥烂入味', price:42, cat:'苏菜', emoji:'🍖', color:'#c0392b' },
+  { id:30, name:'松鼠桂鱼', desc:'桂鱼剞花刀炸制，形似松鼠', price:78, cat:'苏菜', emoji:'🐟', color:'#e74c3c', en:'squirrel fish mandarin' },
+  { id:31, name:'盐水鸭', desc:'南京盐水鸭，皮白肉红', price:38, cat:'苏菜', emoji:'🦆', color:'#ecf0f1', en:'nanjing salted duck' },
+  { id:32, name:'清炖狮子头', desc:'蟹粉大肉丸清汤炖制', price:45, cat:'苏菜', emoji:'🦁', color:'#d35400', en:'lion head meatball' },
+  { id:33, name:'大煮干丝', desc:'豆腐干切丝配高汤', price:28, cat:'苏菜', emoji:'🍜', color:'#f39c12', en:'shredded tofu soup' },
+  { id:34, name:'无锡排骨', desc:'猪肋排酱烧，酥烂入味', price:42, cat:'苏菜', emoji:'🍖', color:'#c0392b', en:'wuxi spare ribs' },
 
   // 湘菜 Hunan
-  { id:40, name:'剁椒鱼头', desc:'胖头鱼配双色剁椒蒸制', price:68, cat:'湘菜', emoji:'🐟', color:'#e74c3c' },
-  { id:41, name:'辣椒炒肉', desc:'青椒五花肉，湖南经典', price:28, cat:'湘菜', emoji:'🌶️', color:'#27ae60' },
-  { id:42, name:'口味虾', desc:'小龙虾香辣烹制', price:88, cat:'湘菜', emoji:'🦞', color:'#c0392b' },
-  { id:43, name:'毛氏红烧肉', desc:'五花肉红烧，不腻不柴', price:38, cat:'湘菜', emoji:'🥩', color:'#d35400' },
-  { id:44, name:'酸豆角肉末', desc:'酸豆角配肉末，下饭神器', price:22, cat:'湘菜', emoji:'🫘', color:'#27ae60' },
+  { id:40, name:'剁椒鱼头', desc:'胖头鱼配双色剁椒蒸制', price:68, cat:'湘菜', emoji:'🐟', color:'#e74c3c', en:'steamed fish head chili' },
+  { id:41, name:'辣椒炒肉', desc:'青椒五花肉，湖南经典', price:28, cat:'湘菜', emoji:'🌶️', color:'#27ae60', en:'stir fry pork pepper' },
+  { id:42, name:'口味虾', desc:'小龙虾香辣烹制', price:88, cat:'湘菜', emoji:'🦞', color:'#c0392b', en:'spicy crawfish' },
+  { id:43, name:'毛氏红烧肉', desc:'五花肉红烧，不腻不柴', price:38, cat:'湘菜', emoji:'🥩', color:'#d35400', en:'braised pork belly red' },
+  { id:44, name:'酸豆角肉末', desc:'酸豆角配肉末，下饭神器', price:22, cat:'湘菜', emoji:'🫘', color:'#27ae60', en:'sour beans minced pork' },
 
   // 京菜 Beijing
-  { id:50, name:'北京烤鸭', desc:'挂炉烤鸭，片皮配甜面酱', price:128, cat:'京菜', emoji:'🦆', color:'#d35400' },
-  { id:51, name:'涮羊肉', desc:'铜锅涮羊肉，配麻酱', price:88, cat:'京菜', emoji:'🐑', color:'#e67e22' },
-  { id:52, name:'炸酱面', desc:'手擀面配肉丁炸酱', price:18, cat:'京菜', emoji:'🍜', color:'#d68910' },
-  { id:53, name:'京酱肉丝', desc:'猪里脊丝配甜面酱，豆腐皮卷食', price:32, cat:'京菜', emoji:'🥢', color:'#c0392b' },
+  { id:50, name:'北京烤鸭', desc:'挂炉烤鸭，片皮配甜面酱', price:128, cat:'京菜', emoji:'🦆', color:'#d35400', en:'peking roast duck' },
+  { id:51, name:'涮羊肉', desc:'铜锅涮羊肉，配麻酱', price:88, cat:'京菜', emoji:'🐑', color:'#e67e22', en:'mutton hotpot chinese' },
+  { id:52, name:'炸酱面', desc:'手擀面配肉丁炸酱', price:18, cat:'京菜', emoji:'🍜', color:'#d68910', en:'zhajiang noodle' },
+  { id:53, name:'京酱肉丝', desc:'猪里脊丝配甜面酱，豆腐皮卷食', price:32, cat:'京菜', emoji:'🥢', color:'#c0392b', en:'jingjiang shredded pork tofu' },
 
   // 浙菜 Zhejiang
-  { id:60, name:'西湖醋鱼', desc:'草鱼醋熘，西湖名菜', price:58, cat:'浙菜', emoji:'🐟', color:'#2ecc71' },
-  { id:61, name:'东坡肉', desc:'五花肉慢炖，肥而不腻', price:38, cat:'浙菜', emoji:'🍖', color:'#d35400' },
-  { id:62, name:'龙井虾仁', desc:'龙井茶配虾仁，清雅鲜嫩', price:68, cat:'浙菜', emoji:'🦐', color:'#27ae60' },
-  { id:63, name:'叫花鸡', desc:'整鸡泥裹烤制，鲜嫩多汁', price:58, cat:'浙菜', emoji:'🐔', color:'#e67e22' },
+  { id:60, name:'西湖醋鱼', desc:'草鱼醋熘，西湖名菜', price:58, cat:'浙菜', emoji:'🐟', color:'#2ecc71', en:'west lake fish vinegar' },
+  { id:61, name:'东坡肉', desc:'五花肉慢炖，肥而不腻', price:38, cat:'浙菜', emoji:'🍖', color:'#d35400', en:'dongpo pork belly' },
+  { id:62, name:'龙井虾仁', desc:'龙井茶配虾仁，清雅鲜嫩', price:68, cat:'浙菜', emoji:'🦐', color:'#27ae60', en:'longjing shrimp tea' },
+  { id:63, name:'叫花鸡', desc:'整鸡泥裹烤制，鲜嫩多汁', price:58, cat:'浙菜', emoji:'🐔', color:'#e67e22', en:'beggar chicken wrapped' },
 
   // 家常菜 Home-style
-  { id:70, name:'番茄炒蛋', desc:'番茄鸡蛋，国民第一菜', price:16, cat:'家常菜', emoji:'🍅', color:'#e74c3c' },
-  { id:71, name:'酸辣土豆丝', desc:'土豆丝醋椒爆炒', price:14, cat:'家常菜', emoji:'🥔', color:'#f39c12' },
-  { id:72, name:'青椒肉丝', desc:'青椒配瘦肉丝，经典家常', price:22, cat:'家常菜', emoji:'🫑', color:'#27ae60' },
-  { id:73, name:'红烧茄子', desc:'茄子红烧，软烂入味', price:18, cat:'家常菜', emoji:'🍆', color:'#8e44ad' },
-  { id:74, name:'可乐鸡翅', desc:'鸡翅配可乐烹制', price:28, cat:'家常菜', emoji:'🍗', color:'#c0392b' },
-  { id:75, name:'蒜蓉西兰花', desc:'西兰花蒜蓉清炒', price:18, cat:'家常菜', emoji:'🥦', color:'#27ae60' },
+  { id:70, name:'番茄炒蛋', desc:'番茄鸡蛋，国民第一菜', price:16, cat:'家常菜', emoji:'🍅', color:'#e74c3c', en:'tomato scrambled egg' },
+  { id:71, name:'酸辣土豆丝', desc:'土豆丝醋椒爆炒', price:14, cat:'家常菜', emoji:'🥔', color:'#f39c12', en:'sour spicy potato' },
+  { id:72, name:'青椒肉丝', desc:'青椒配瘦肉丝，经典家常', price:22, cat:'家常菜', emoji:'🫑', color:'#27ae60', en:'green pepper pork shreds' },
+  { id:73, name:'红烧茄子', desc:'茄子红烧，软烂入味', price:18, cat:'家常菜', emoji:'🍆', color:'#8e44ad', en:'braised eggplant' },
+  { id:74, name:'可乐鸡翅', desc:'鸡翅配可乐烹制', price:28, cat:'家常菜', emoji:'🍗', color:'#c0392b', en:'cola chicken wings' },
+  { id:75, name:'蒜蓉西兰花', desc:'西兰花蒜蓉清炒', price:18, cat:'家常菜', emoji:'🥦', color:'#27ae60', en:'garlic broccoli stir fry' },
 
   // 凉菜 Cold Dishes
-  { id:80, name:'凉拌黄瓜', desc:'拍黄瓜蒜泥醋拌', price:12, cat:'凉菜', emoji:'🥒', color:'#27ae60' },
-  { id:81, name:'皮蛋豆腐', desc:'松花蛋配嫩豆腐', price:15, cat:'凉菜', emoji:'🥚', color:'#bdc3c7' },
-  { id:82, name:'口水鸡', desc:'白切鸡配红油芝麻', price:32, cat:'凉菜', emoji:'🐔', color:'#e74c3c' },
-  { id:83, name:'蒜泥白肉', desc:'白肉薄片配蒜泥', price:28, cat:'凉菜', emoji:'🥩', color:'#ecf0f1' },
+  { id:80, name:'凉拌黄瓜', desc:'拍黄瓜蒜泥醋拌', price:12, cat:'凉菜', emoji:'🥒', color:'#27ae60', en:'smashed cucumber salad' },
+  { id:81, name:'皮蛋豆腐', desc:'松花蛋配嫩豆腐', price:15, cat:'凉菜', emoji:'🥚', color:'#bdc3c7', en:'century egg tofu' },
+  { id:82, name:'口水鸡', desc:'白切鸡配红油芝麻', price:32, cat:'凉菜', emoji:'🐔', color:'#e74c3c', en:'mouthwatering chicken spicy' },
+  { id:83, name:'蒜泥白肉', desc:'白肉薄片配蒜泥', price:28, cat:'凉菜', emoji:'🥩', color:'#ecf0f1', en:'garlic white pork belly' },
 
   // 汤羹 Soups
-  { id:90, name:'酸辣汤', desc:'豆腐木耳鸡蛋，酸辣开胃', price:16, cat:'汤羹', emoji:'🥣', color:'#e67e22' },
-  { id:91, name:'紫菜蛋花汤', desc:'紫菜配蛋花，清淡鲜美', price:12, cat:'汤羹', emoji:'🍳', color:'#9b59b6' },
-  { id:92, name:'冬瓜排骨汤', desc:'冬瓜配排骨炖汤', price:32, cat:'汤羹', emoji:'🍖', color:'#27ae60' },
-  { id:93, name:'西湖牛肉羹', desc:'牛肉末蛋白花', price:22, cat:'汤羹', emoji:'🥣', color:'#2ecc71' },
+  { id:90, name:'酸辣汤', desc:'豆腐木耳鸡蛋，酸辣开胃', price:16, cat:'汤羹', emoji:'🥣', color:'#e67e22', en:'hot sour soup chinese' },
+  { id:91, name:'紫菜蛋花汤', desc:'紫菜配蛋花，清淡鲜美', price:12, cat:'汤羹', emoji:'🍳', color:'#9b59b6', en:'seaweed egg drop soup' },
+  { id:92, name:'冬瓜排骨汤', desc:'冬瓜配排骨炖汤', price:32, cat:'汤羹', emoji:'🍖', color:'#27ae60', en:'pork rib soup' },
+  { id:93, name:'西湖牛肉羹', desc:'牛肉末蛋白花', price:22, cat:'汤羹', emoji:'🥣', color:'#2ecc71', en:'west lake beef soup' },
 
   // 主食 Staples
-  { id:100, name:'蛋炒饭', desc:'鸡蛋葱花炒米饭', price:15, cat:'主食', emoji:'🍚', color:'#f39c12' },
-  { id:101, name:'扬州炒饭', desc:'虾仁火腿青豆蛋炒饭', price:22, cat:'主食', emoji:'🍚', color:'#e67e22' },
-  { id:102, name:'担担面', desc:'四川担担面，麻辣香', price:16, cat:'主食', emoji:'🍜', color:'#e74c3c' },
-  { id:103, name:'阳春面', desc:'清汤面配葱花', price:10, cat:'主食', emoji:'🍜', color:'#bdc3c7' },
-  { id:104, name:'猪肉水饺', desc:'手工水饺，皮薄馅大', price:22, cat:'主食', emoji:'🥟', color:'#d35400' },
-  { id:105, name:'牛肉拉面', desc:'兰州拉面，汤清味浓', price:18, cat:'主食', emoji:'🍜', color:'#27ae60' },
+  { id:100, name:'蛋炒饭', desc:'鸡蛋葱花炒米饭', price:15, cat:'主食', emoji:'🍚', color:'#f39c12', en:'egg fried rice' },
+  { id:101, name:'扬州炒饭', desc:'虾仁火腿青豆蛋炒饭', price:22, cat:'主食', emoji:'🍚', color:'#e67e22', en:'yangzhou fried rice' },
+  { id:102, name:'担担面', desc:'四川担担面，麻辣香', price:16, cat:'主食', emoji:'🍜', color:'#e74c3c', en:'dandan noodles sichuan' },
+  { id:103, name:'阳春面', desc:'清汤面配葱花', price:10, cat:'主食', emoji:'🍜', color:'#bdc3c7', en:'yangchun noodle soup' },
+  { id:104, name:'猪肉水饺', desc:'手工水饺，皮薄馅大', price:22, cat:'主食', emoji:'🥟', color:'#d35400', en:'chinese pork dumpling' },
+  { id:105, name:'牛肉拉面', desc:'兰州拉面，汤清味浓', price:18, cat:'主食', emoji:'🍜', color:'#27ae60', en:'lanzhou beef noodle' },
 
   // 小吃 Snacks
-  { id:110, name:'春卷', desc:'猪肉蔬菜馅油炸春卷', price:18, cat:'小吃', emoji:'🥐', color:'#f39c12' },
-  { id:111, name:'煎饼果子', desc:'薄饼夹油条鸡蛋', price:10, cat:'小吃', emoji:'🥞', color:'#e67e22' },
-  { id:112, name:'肉夹馍', desc:'白吉馍夹腊汁肉', price:15, cat:'小吃', emoji:'🥙', color:'#d35400' },
-  { id:113, name:'小笼包', desc:'灌汤小笼，皮薄汤鲜', price:22, cat:'小吃', emoji:'🥟', color:'#f5b041' },
-  { id:114, name:'锅贴', desc:'猪肉馅锅贴煎制', price:18, cat:'小吃', emoji:'🥟', color:'#e67e22' },
+  { id:110, name:'春卷', desc:'猪肉蔬菜馅油炸春卷', price:18, cat:'小吃', emoji:'🥐', color:'#f39c12', en:'spring roll chinese' },
+  { id:111, name:'煎饼果子', desc:'薄饼夹油条鸡蛋', price:10, cat:'小吃', emoji:'🥞', color:'#e67e22', en:'jianbing chinese pancake' },
+  { id:112, name:'肉夹馍', desc:'白吉馍夹腊汁肉', price:15, cat:'小吃', emoji:'🥙', color:'#d35400', en:'roujiamo chinese burger' },
+  { id:113, name:'小笼包', desc:'灌汤小笼，皮薄汤鲜', price:22, cat:'小吃', emoji:'🥟', color:'#f5b041', en:'xiaolongbao soup dumpling' },
+  { id:114, name:'锅贴', desc:'猪肉馅锅贴煎制', price:18, cat:'小吃', emoji:'🥟', color:'#e67e22', en:'potsticker fried dumpling' },
 ];
 
 const CATEGORIES = ['全部','川菜','粤菜','鲁菜','苏菜','湘菜','京菜','浙菜','家常菜','凉菜','汤羹','主食','小吃'];
@@ -611,7 +614,8 @@ function renderDishes() {
     const inCart = getCartItem(d.id);
     return `
     <article class="dish-card" role="article" aria-label="${d.name}">
-      <div class="dish-img" style="background:linear-gradient(135deg,${d.color} 0%,${adjustColor(d.color,-40)} 100%)" role="img" aria-label="${d.name}"><span class="dish-img-emoji">${d.emoji}</span><span class="dish-img-name">${d.name}</span></div>
+      <img class="dish-img" src="https://loremflickr.com/400/300/${encodeURIComponent(d.en)},chinese,food" alt="${d.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="object-fit:cover">
+      <div class="dish-img dish-img-fallback" style="display:none;background:linear-gradient(135deg,${d.color} 0%,${adjustColor(d.color,-40)} 100%)" aria-hidden="true"><span class="dish-img-emoji">${d.emoji}</span><span class="dish-img-name">${d.name}</span></div>
       <div class="dish-body">
         <div class="dish-name">${d.name}</div>
         <div class="dish-desc">${d.desc}</div>
