@@ -147,6 +147,17 @@ body {
 }
 .dish-img-emoji { font-size:2.5rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
 .dish-img-name { font-size:var(--font-sm); color:rgba(255,255,255,0.9); font-weight:600; text-shadow:0 1px 3px rgba(0,0,0,0.3); }
+/* Edit mode */
+.edit-toggle { width:36px;height:36px;border-radius:50%;border:1.5px dashed rgba(255,255,255,0.5);background:transparent;color:rgba(255,255,255,0.7);font-size:0.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition-fast);margin-left:4px; }
+.edit-toggle:hover,.edit-toggle.active { border-color:#fff;color:#fff;background:rgba(255,255,255,0.15); }
+.dish-img-edit-overlay { position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:2; }
+.edit-mode .dish-img-edit-overlay { display:flex; }
+.dish-img-edit-input { width:85%;height:32px;border-radius:6px;border:none;padding:0 8px;font-size:12px;text-align:center;background:rgba(255,255,255,0.95); }
+.dish-img-edit-actions { display:flex;gap:8px; }
+.dish-img-edit-btn { padding:4px 12px;border-radius:14px;border:none;font-size:12px;font-weight:600;cursor:pointer; }
+.dish-img-edit-save { background:#52c41a;color:#fff; }
+.dish-img-edit-reset { background:rgba(255,255,255,0.85);color:#333; }
+.dish-img-edit-hint { color:rgba(255,255,255,0.8);font-size:11px; }
 .dish-body { padding:var(--space-md); flex:1; display:flex; flex-direction:column; }
 .dish-name { font-size:var(--font-base); font-weight:600; margin-bottom:2px; line-height:1.3; }
 .dish-desc { font-size:var(--font-xs); color:var(--color-text-muted); margin-bottom:var(--space-sm); flex:1; }
@@ -346,6 +357,7 @@ body {
 <!-- Header -->
 <header class="header" role="banner">
   <h1 class="header-title">🍽️ 美味点菜</h1>
+  <button class="edit-toggle" id="editToggleBtn" aria-label="切换图片编辑模式" title="自定义菜品图片">🖼</button>
   <button class="header-cart-btn" aria-label="查看购物车" id="headerCartBtn">
     🛒<span class="cart-badge" id="cartBadge" style="display:none">0</span>
   </button>
@@ -605,6 +617,40 @@ function adjustColor(hex, amount) {
   return '#' + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
+// ===== CUSTOM IMAGES (localStorage) =====
+let CUSTOM_IMG = {};
+try { CUSTOM_IMG = JSON.parse(localStorage.getItem('dishCustomImages')) || {}; } catch(e) {}
+let editMode = false;
+
+function getImgUrl(dishId) {
+  return CUSTOM_IMG[dishId] || PEXELS[dishId] || ('https://loremflickr.com/400/300/'+encodeURIComponent((DISHES.find(d=>d.id===dishId)||{}).en||'chinese')+',chinese,food');
+}
+
+function saveCustomImage(dishId, url) {
+  if (!url || !url.trim()) {
+    delete CUSTOM_IMG[dishId];
+  } else {
+    CUSTOM_IMG[dishId] = url.trim();
+  }
+  localStorage.setItem('dishCustomImages', JSON.stringify(CUSTOM_IMG));
+  renderDishes();
+}
+
+function toggleEditMode() {
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  const btn = document.getElementById('editToggleBtn');
+  if (editMode) {
+    btn.classList.add('active');
+    btn.title = '退出图片编辑';
+    showToast('点击菜品图片可自定义更换图片');
+  } else {
+    btn.classList.remove('active');
+    btn.title = '自定义菜品图片';
+  }
+  renderDishes();
+}
+
 function renderDishes() {
   const dishes = filterDishes();
   if (dishes.length === 0) {
@@ -613,12 +659,26 @@ function renderDishes() {
   }
   dishGrid.innerHTML = dishes.map(d => {
     const inCart = getCartItem(d.id);
+    const imgUrl = getImgUrl(d.id);
+    const hasCustom = CUSTOM_IMG[d.id];
+    const escId = d.id;
     return `
     <article class="dish-card" role="article" aria-label="${d.name}">
-      <img class="dish-img" src="${PEXELS[d.id]||'https://loremflickr.com/400/300/'+encodeURIComponent(d.en)+',chinese,food'}" alt="${d.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="object-fit:cover">
-      <div class="dish-img dish-img-fallback" style="display:none;background:linear-gradient(135deg,${d.color} 0%,${adjustColor(d.color,-40)} 100%)" aria-hidden="true"><span class="dish-img-emoji">${d.emoji}</span><span class="dish-img-name">${d.name}</span></div>
+      <div style="position:relative">
+        <img class="dish-img" src="${imgUrl}" alt="${d.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="object-fit:cover">
+        <div class="dish-img dish-img-fallback" style="display:none;background:linear-gradient(135deg,${d.color} 0%,${adjustColor(d.color,-40)} 100%)" aria-hidden="true"><span class="dish-img-emoji">${d.emoji}</span><span class="dish-img-name">${d.name}</span></div>
+        ${editMode ? `
+        <div class="dish-img-edit-overlay" onclick="event.stopPropagation()">
+          <input class="dish-img-edit-input" type="url" placeholder="粘贴图片URL" value="${hasCustom ? imgUrl : ''}" id="imgInput${escId}">
+          <div class="dish-img-edit-actions">
+            <button class="dish-img-edit-btn dish-img-edit-save" onclick="saveCustomImage(${d.id},document.getElementById('imgInput${escId}').value)">✓ 保存</button>
+            ${hasCustom ? `<button class="dish-img-edit-btn dish-img-edit-reset" onclick="saveCustomImage(${d.id},'');document.getElementById('imgInput${escId}').value=''">↩ 还原</button>` : ''}
+          </div>
+          <span class="dish-img-edit-hint">输入网络图片URL后点保存${hasCustom ? '，或点还原恢复默认' : ''}</span>
+        </div>` : ''}
+      </div>
       <div class="dish-body">
-        <div class="dish-name">${d.name}</div>
+        <div class="dish-name">${d.name}${hasCustom && !editMode ? ' <span style="font-size:10px;color:#52c41a">✎</span>' : ''}</div>
         <div class="dish-desc">${d.desc}</div>
         <div class="dish-bottom">
           <span class="dish-price"><small>¥</small>${d.price}</span>
@@ -773,6 +833,9 @@ searchInput.addEventListener('input', () => {
   searchQuery = searchInput.value.trim();
   renderDishes();
 });
+
+// Edit toggle
+$('#editToggleBtn').addEventListener('click', toggleEditMode);
 
 // Header cart btn
 $('#headerCartBtn').addEventListener('click', openCartSheet);
