@@ -157,7 +157,8 @@ body {
 .dish-img-edit-btn { padding:4px 12px;border-radius:14px;border:none;font-size:12px;font-weight:600;cursor:pointer; }
 .dish-img-edit-save { background:#52c41a;color:#fff; }
 .dish-img-edit-reset { background:rgba(255,255,255,0.85);color:#333; }
-.dish-img-edit-hint { color:rgba(255,255,255,0.8);font-size:11px; }
+.dish-img-upload-btn { display:inline-block;padding:4px 14px;border-radius:14px;background:rgba(255,255,255,0.2);color:#fff;font-size:12px;cursor:pointer;border:none;font-weight:500;transition:background var(--transition-fast); }
+.dish-img-upload-btn:hover { background:rgba(255,255,255,0.35); }
 .dish-body { padding:var(--space-md); flex:1; display:flex; flex-direction:column; }
 .dish-name { font-size:var(--font-base); font-weight:600; margin-bottom:2px; line-height:1.3; }
 .dish-desc { font-size:var(--font-xs); color:var(--color-text-muted); margin-bottom:var(--space-sm); flex:1; }
@@ -626,6 +627,21 @@ function getImgUrl(dishId) {
   return CUSTOM_IMG[dishId] || PEXELS[dishId] || ('https://loremflickr.com/400/300/'+encodeURIComponent((DISHES.find(d=>d.id===dishId)||{}).en||'chinese')+',chinese,food');
 }
 
+function handleImgFile(dishId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 800 * 1024) {
+    showToast('图片过大，建议先用截图工具缩小尺寸（<800KB）');
+  }
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById('imgInput'+dishId).value = ev.target.result;
+    saveCustomImage(dishId, ev.target.result);
+    showToast('图片已更新');
+  };
+  reader.readAsDataURL(file);
+}
+
 function saveCustomImage(dishId, url) {
   if (!url || !url.trim()) {
     delete CUSTOM_IMG[dishId];
@@ -669,12 +685,14 @@ function renderDishes() {
         <div class="dish-img dish-img-fallback" style="display:none;background:linear-gradient(135deg,${d.color} 0%,${adjustColor(d.color,-40)} 100%)" aria-hidden="true"><span class="dish-img-emoji">${d.emoji}</span><span class="dish-img-name">${d.name}</span></div>
         ${editMode ? `
         <div class="dish-img-edit-overlay" onclick="event.stopPropagation()">
-          <input class="dish-img-edit-input" type="url" placeholder="粘贴图片URL" value="${hasCustom ? imgUrl : ''}" id="imgInput${escId}">
+          <input class="dish-img-edit-input" type="text" placeholder="粘贴网络图片URL…" value="${hasCustom ? imgUrl : ''}" id="imgInput${escId}">
+          <div style="color:rgba(255,255,255,0.6);font-size:11px">或者</div>
+          <label class="dish-img-upload-btn" for="imgFile${escId}">📁 选择本地图片</label>
+          <input type="file" accept="image/*" style="display:none" id="imgFile${escId}" onchange="handleImgFile(${d.id},this)">
           <div class="dish-img-edit-actions">
             <button class="dish-img-edit-btn dish-img-edit-save" onclick="saveCustomImage(${d.id},document.getElementById('imgInput${escId}').value)">✓ 保存</button>
-            ${hasCustom ? `<button class="dish-img-edit-btn dish-img-edit-reset" onclick="saveCustomImage(${d.id},'');document.getElementById('imgInput${escId}').value=''">↩ 还原</button>` : ''}
+            ${hasCustom ? `<button class="dish-img-edit-btn dish-img-edit-reset" onclick="saveCustomImage(${d.id},'');document.getElementById('imgInput${escId}').value=''">↩ 还原默认</button>` : ''}
           </div>
-          <span class="dish-img-edit-hint">输入网络图片URL后点保存${hasCustom ? '，或点还原恢复默认' : ''}</span>
         </div>` : ''}
       </div>
       <div class="dish-body">
